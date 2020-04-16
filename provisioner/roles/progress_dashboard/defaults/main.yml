@@ -1,11 +1,13 @@
 ---
 
+# set your admin username/password combo here:
+admin_username: ***SET_HERE***
+admin_password: ***SET_HERE***
+
 # sensible defaults for the progress dashboarding
 timezone: 'Europe/London'
 influxdb_port: 8443
 grafana_port: 8888
-admin_username: admin
-admin_password: Redhat123
 
 # just used normally for rollout testing
 influxdb_install_version: stable
