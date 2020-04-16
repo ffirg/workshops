@@ -52,7 +52,7 @@
     {
       "cacheTimeout": null,
       "datasource": "InfluxDB",
-      "description": "Tracker for the Ansible Engine and Tower Labs",
+      "description": "Tracker for Ansible Workshops",
       "gridPos": {
         "h": 8,
         "w": 23,
