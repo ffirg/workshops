@@ -1,8 +1,8 @@
 ---
 
 # set your admin username/password combo here:
-admin_username: ***SET_HERE***
-admin_password: ***SET_HERE***
+admin_username: SET_YOURS_HERE
+admin_password: SET_YOURS_HERE
 
 # sensible defaults for the progress dashboarding
 timezone: 'Europe/London'
