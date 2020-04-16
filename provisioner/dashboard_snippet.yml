@@ -1,0 +1,8 @@
+---
+
+- name: Create Progress Dashboarding
+  hosts: control
+  gather_facts: true
+  become: true
+  roles:
+    - progress_dashboard

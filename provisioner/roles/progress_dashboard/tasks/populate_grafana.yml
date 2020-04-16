@@ -1,0 +1,32 @@
+---
+- name: Create dashboarding
+  grafana_datasource:
+    name: "InfluxDB"
+    grafana_url: "http://localhost:{{ grafana_port }}"
+    grafana_user: "{{ admin_username }}"
+    grafana_password: "{{ admin_password }}"
+    tls_skip_verify: true
+    validate_certs: false
+    ds_type: influxdb
+    database: "{{ influxdb_database_name }}"
+    ds_url: "https://localhost:{{ influxdb_port }}"
+    time_interval: ">10s"
+  tags: [ dashboard ]
+
+- name: Copy over dashboard JSON
+  copy:
+    src: ansible_workshop_dashboard.json
+    dest: /tmp/ansible_workshop_dashboard.json
+    mode: '0644'
+  tags: [ dashboard ]
+
+- name: Import Grafana dashboard foo
+  grafana_dashboard:
+    grafana_url: "http://localhost:{{ grafana_port }}"
+    grafana_user: "{{ admin_username }}"
+    grafana_password: "{{ admin_password }}"
+    validate_certs: false
+    state: present
+    overwrite: true
+    path: /tmp/ansible_workshop_dashboard.json
+  tags: [ dashboard ]

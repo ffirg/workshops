@@ -1,0 +1,46 @@
+---
+
+# sensible defaults for the progress dashboarding
+timezone: 'Europe/London'
+influxdb_port: 8443
+grafana_port: 8888
+admin_username: admin
+admin_password: Redhat123
+
+# just used normally for rollout testing
+influxdb_install_version: stable
+influxdb_binary_path: /usr/bin
+influxdb_create_data: true
+influxdb_database_name: ansibleworkshops
+# need to pin grafana to v6.6.2 latest else it breaks the dashboarding in v6.7+ :(
+grafana_install_version: 6.6.2-1
+grafana_create_data: true
+
+# You shouldn't need to change anything below this line
+tools:
+  - influxdb
+  - grafana
+
+packages:
+  - influxdb
+  - grafana-{{ grafana_install_version }}
+
+prereqs:
+  - curl
+
+tools_service_names:
+  - influxdb
+  - grafana-server
+
+gpgkeys:
+  influxdb: 'https://repos.influxdata.com/influxdb.key'
+  grafana: 'https://packages.grafana.com/gpg.key'
+
+firewall_ports:
+  - '8086/tcp'
+  - '4444/tcp'
+  - '3000/tcp'
+
+tower_cert_files:
+  - /etc/tower/tower.cert
+  - /etc/tower/tower.key

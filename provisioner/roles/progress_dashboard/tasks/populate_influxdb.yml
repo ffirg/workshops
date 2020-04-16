@@ -1,0 +1,10 @@
+---
+- name: Create workshop database
+  influxdb_database:
+    database_name: "{{ influxdb_database_name }}"
+    port: "{{ influxdb_port }}"
+    ssl: true
+    validate_certs: flase
+  register: db_listing
+  changed_when: false
+  tags: [ database ]

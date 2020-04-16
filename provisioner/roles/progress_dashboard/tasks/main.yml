@@ -1,0 +1,115 @@
+---
+
+- name: Add repo source keys
+  rpm_key:
+    state: present
+    key: "{{ item.value }}"
+  with_dict: "{{ gpgkeys }}"
+  tags: [ install ]
+
+- name: Add repos
+  template:
+    src: "{{ item }}.repo.j2"
+    dest: "/etc/yum.repos.d/{{ item }}.repo"
+  loop: "{{ tools }}"
+  tags: [ install ]
+
+- name: Install Packages
+  dnf: name="{{ item }}"
+  loop:
+    - "{{ prereqs }}"
+    - "{{ packages }}"
+  tags: [ install ]
+
+- name: install Python pip modules
+  pip:
+    name: influxdb
+  tags: [ install ]
+
+- name: Ensure configuration directories exist
+  file:
+    dest: "/etc/{{ item }}"
+    state: directory
+  loop: "{{ tools }}"
+  tags: [ config ]
+
+- name: Copy over InfluxDB configuration
+  template:
+    src: influxdb.conf.j2
+    dest: /etc/influxdb/influxdb.conf
+    owner: influxdb
+    group: influxdb
+    mode: '0644'
+  notify: restart influxdb
+  tags: [ config ]
+
+- name: Copy over Grafana configuration
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: root
+    group: wheel
+    mode: '0644'
+  notify: restart grafana
+  tags: [ config ]
+
+- name: Check if firewalld is in use
+  shell: systemctl is-active firewalld
+  register: firewall_status
+  ignore_errors: true
+  changed_when: false
+  failed_when: "'inactive' not in firewall_status.stdout and firewall_status.rc != 0"
+  tags: [ install, config ]
+
+- name: Open firewall ports if necessary
+  firewalld:
+    port: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop: "{{ firewall_ports }}"
+  when: firewall_status.stdout == 'active'
+  tags: [ install, config ]
+
+- name: Check time synchronisation is setup
+  service:
+    name: chronyd
+    state: started
+    enabled: true
+  tags: [ install, config ]
+
+- name: Set system timezone
+  timezone:
+    name: "{{ timezone }}"
+  tags: [ install, config ]
+
+- name: change SSL cert permissions so influxdb can re-use
+  file:
+    path: "{{ item }}"
+    mode: '0644'
+  loop: "{{ tower_cert_files }}"
+
+- name: Give ownership of database files to influxdb user
+  file:
+    path: /var/lib/influxdb
+    owner: influxdb
+    group: influxdb
+    recurse: true
+
+- name: Start services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ tools_service_names }}"
+  tags: [ install, config ]
+
+- name: Populate InfluxDB
+  include: populate_influxdb.yml
+  when: influxdb_create_data
+  tags: database
+
+- name: Populate Grafana
+  include: populate_grafana.yml
+  when: grafana_create_data
+  tags: dashboard
